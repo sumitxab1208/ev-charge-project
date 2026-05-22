@@ -32,6 +32,8 @@ def get_db_connection():
 
 @app.route('/')
 def home():
+    if 'user' not in session:
+        return redirect('/login')
     return render_template('index.html')
 
 # ================= STATIONS API =================
@@ -145,7 +147,6 @@ def bookings():
 
     conn = get_db_connection()
     cur  = conn.cursor()
-    # Only show the logged-in user's own bookings
     cur.execute(
         "SELECT * FROM bookings WHERE username=? ORDER BY id DESC",
         (username,)
@@ -165,7 +166,6 @@ def cancel_booking(id):
     username = session['user']
     conn     = get_db_connection()
     cur      = conn.cursor()
-    # Only allow users to cancel their own bookings
     cur.execute(
         "DELETE FROM bookings WHERE id=? AND username=?",
         (id, username)
@@ -185,7 +185,6 @@ def favourites():
 
 @app.route('/admin')
 def admin():
-    # Basic admin guard — only 'admin' username
     if session.get('user') != 'admin':
         return redirect('/')
 
