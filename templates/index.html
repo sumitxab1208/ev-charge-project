@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EV Charge | Smart EV Charging Finder</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body class="dark-mode">
+
+<!-- ================= LOADER ================= -->
+
+<div id="loader">
+    <div class="loader-box">
+        <div class="loader-circle"></div>
+        <h2>⚡ Loading EV Charge...</h2>
+    </div>
+</div>
+
+<!-- ================= MAIN APP ================= -->
+
+<div class="main-wrapper fade-in">
+
+    <!-- ================= NAVBAR ================= -->
+
+    <div class="topbar glass">
+
+        <div class="logo-area">
+            <h1>⚡ EV <span>Charge</span></h1>
+            <p>Smart EV Charging Management System</p>
+        </div>
+
+        <div class="top-actions">
+
+            <!-- LIVE CLOCK -->
+            <div class="live-clock" id="liveClock">
+                <i class="fa-solid fa-clock"></i>
+                <span id="clockTime">--:--</span>
+            </div>
+
+            {% if session.user %}
+                <div class="user-badge">
+                    <i class="fa-solid fa-user"></i>
+                    {{ session.user }}
+                </div>
+            {% endif %}
+
+            <button class="theme-btn" id="themeBtn" onclick="toggleDarkMode()">
+                <i class="fa-solid fa-moon" id="themeIcon"></i>
+                <span id="themeLabel">Dark</span>
+            </button>
+
+        </div>
+    </div>
+
+    <!-- ================= HERO BANNER ================= -->
+
+    <div class="hero-banner glass glow-card">
+
+        <div class="hero-left">
+            <div class="hero-tag">
+                <i class="fa-solid fa-satellite-dish"></i>
+                Live Network — <span id="heroStationCount">0</span> stations active
+            </div>
+            <h1>Find EV Charging Stations Instantly ⚡</h1>
+            <p>
+                Search nearby charging stations, compare prices,
+                navigate with one click, and manage all your bookings
+                from a single smart EV dashboard.
+            </p>
+            <div class="hero-buttons">
+                <button class="primary-btn" onclick="findNearest()">
+                    <i class="fa-solid fa-location-crosshairs"></i>
+                    Find Nearest
+                </button>
+                <button class="success-btn" onclick="showAvailable()">
+                    <i class="fa-solid fa-circle-check"></i>
+                    Available Now
+                </button>
+                <button class="favorite-btn" onclick="showFast()">
+                    <i class="fa-solid fa-bolt"></i>
+                    Fast Chargers
+                </button>
+            </div>
+        </div>
+
+        <div class="hero-right">
+            <!-- SVG illustration — no external image dependency -->
+            <div class="hero-illustration">
+                <svg viewBox="0 0 260 180" xmlns="http://www.w3.org/2000/svg">
+                    <!-- background glow -->
+                    <defs>
+                        <radialGradient id="glow1" cx="50%" cy="50%" r="50%">
+                            <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.3"/>
+                            <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>
+                        </radialGradient>
+                        <radialGradient id="glow2" cx="50%" cy="50%" r="50%">
+                            <stop offset="0%" stop-color="#22c55e" stop-opacity="0.25"/>
+                            <stop offset="100%" stop-color="#22c55e" stop-opacity="0"/>
+                        </radialGradient>
+                        <linearGradient id="carBody" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#1e40af"/>
+                            <stop offset="100%" stop-color="#3b82f6"/>
+                        </linearGradient>
+                        <linearGradient id="bolt" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stop-color="#facc15"/>
+                            <stop offset="100%" stop-color="#f59e0b"/>
+                        </linearGradient>
+                    </defs>
+
+                    <!-- glow circles -->
+                    <circle cx="130" cy="90" r="80" fill="url(#glow1)"/>
+                    <circle cx="200" cy="60" r="50" fill="url(#glow2)"/>
+
+                    <!-- road -->
+                    <rect x="10" y="138" width="240" height="8" rx="4" fill="rgba(255,255,255,0.06)"/>
+                    <rect x="60" y="140" width="30" height="3" rx="2" fill="rgba(255,255,255,0.15)"/>
+                    <rect x="115" y="140" width="30" height="3" rx="2" fill="rgba(255,255,255,0.15)"/>
+                    <rect x="170" y="140" width="30" height="3" rx="2" fill="rgba(255,255,255,0.15)"/>
+
+                    <!-- EV car body -->
+                    <rect x="50" y="98" width="130" height="38" rx="10" fill="url(#carBody)"/>
+                    <!-- car roof -->
+                    <path d="M75 98 Q90 72 140 72 Q170 72 180 98 Z" fill="#2563eb"/>
+                    <!-- windshield -->
+                    <path d="M88 98 Q97 80 135 80 Q158 80 165 98 Z" fill="rgba(147,197,253,0.35)"/>
+                    <!-- windows -->
+                    <rect x="92" y="80" width="30" height="17" rx="4" fill="rgba(147,197,253,0.25)"/>
+                    <rect x="128" y="80" width="30" height="17" rx="4" fill="rgba(147,197,253,0.25)"/>
+
+                    <!-- wheels -->
+                    <circle cx="90"  cy="136" r="14" fill="#0f172a" stroke="#475569" stroke-width="2"/>
+                    <circle cx="90"  cy="136" r="7"  fill="#1e293b"/>
+                    <circle cx="90"  cy="136" r="3"  fill="#60a5fa"/>
+                    <circle cx="168" cy="136" r="14" fill="#0f172a" stroke="#475569" stroke-width="2"/>
+                    <circle cx="168" cy="136" r="7"  fill="#1e293b"/>
+                    <circle cx="168" cy="136" r="3"  fill="#60a5fa"/>
+
+                    <!-- charging port highlight -->
+                    <rect x="176" y="108" width="6" height="10" rx="2" fill="#60a5fa" opacity="0.9"/>
+
+                    <!-- charging station pole -->
+                    <rect x="210" y="70" width="8" height="68" rx="3" fill="#1e293b" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+                    <!-- station box -->
+                    <rect x="200" y="50" width="28" height="40" rx="6" fill="#0f172a" stroke="#3b82f6" stroke-width="1.5"/>
+                    <!-- station screen -->
+                    <rect x="205" y="55" width="18" height="12" rx="2" fill="#1d4ed8"/>
+                    <text x="214" y="64" text-anchor="middle" font-size="7" fill="#93c5fd" font-family="monospace">EV</text>
+                    <!-- bolt icon on station -->
+                    <polygon points="218,72 214,82 217,82 213,92 219,79 216,79" fill="url(#bolt)"/>
+
+                    <!-- charging cable -->
+                    <path d="M200 88 Q190 100 183 112" stroke="#facc15" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-dasharray="4,3" opacity="0.8"/>
+
+                    <!-- animated pulse rings around station -->
+                    <circle cx="214" cy="70" r="22" fill="none" stroke="#3b82f6" stroke-width="1" opacity="0.3">
+                        <animate attributeName="r" values="22;34;22" dur="2.5s" repeatCount="indefinite"/>
+                        <animate attributeName="opacity" values="0.3;0;0.3" dur="2.5s" repeatCount="indefinite"/>
+                    </circle>
+
+                    <!-- floating ⚡ sparks -->
+                    <text x="192" y="45" font-size="12" fill="#facc15" opacity="0.9">⚡</text>
+                    <text x="38"  y="88" font-size="9"  fill="#60a5fa" opacity="0.6">●</text>
+                    <text x="240" y="110" font-size="8" fill="#4ade80" opacity="0.5">●</text>
+                </svg>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ================= STATS ================= -->
+
+    <div class="stats-grid">
+
+        <div class="stat-card glass glow-card">
+            <div class="stat-icon blue">
+                <i class="fa-solid fa-charging-station"></i>
+            </div>
+            <div>
+                <h3 id="totalStations">0</h3>
+                <p>Total Stations</p>
+            </div>
+        </div>
+
+        <div class="stat-card glass glow-card">
+            <div class="stat-icon yellow">
+                <i class="fa-solid fa-bolt"></i>
+            </div>
+            <div>
+                <h3 id="fastCount">0</h3>
+                <p>Fast Chargers</p>
+            </div>
+        </div>
+
+        <div class="stat-card glass glow-card">
+            <div class="stat-icon green">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <div>
+                <h3 id="availableCount">0</h3>
+                <p>Available</p>
+            </div>
+        </div>
+
+        <div class="stat-card glass glow-card">
+            <div class="stat-icon purple">
+                <i class="fa-solid fa-satellite-dish"></i>
+            </div>
+            <div>
+                <h3>24/7</h3>
+                <p>Live Monitoring</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ================= CONTENT ================= -->
+
+    <div class="dashboard-grid">
+
+        <!-- ================= SIDEBAR ================= -->
+
+        <div class="sidebar glass">
+
+            <!-- SEARCH -->
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="searchBox" placeholder="Search charging station...">
+            </div>
+
+            <!-- SEARCH BUTTON -->
+            <button class="primary-btn" onclick="searchStation()">
+                <i class="fa-solid fa-search"></i>
+                Search Station
+            </button>
+
+            <!-- FIND NEAREST -->
+            <button class="success-btn" onclick="findNearest()">
+                <i class="fa-solid fa-location-dot"></i>
+                Find Nearest Charger
+            </button>
+
+            <!-- RESULT -->
+            <div class="result-box">
+                <p id="result">Ready</p>
+                <p>📍 Distance: <span id="nearestDistance">--</span></p>
+            </div>
+
+            <!-- FILTERS -->
+            <div class="section-title">Filters</div>
+
+            <button class="filter-btn" onclick="showAll()">
+                <i class="fa-solid fa-layer-group"></i> Show All
+            </button>
+
+            <button class="filter-btn" onclick="showAvailable()">
+                <i class="fa-solid fa-circle-check"></i> Available Only
+            </button>
+
+            <button class="filter-btn" onclick="showNearby()">
+                <i class="fa-solid fa-map-pin"></i> Nearby (5 km)
+            </button>
+
+            <button class="filter-btn" onclick="showFast()">
+                <i class="fa-solid fa-bolt"></i> Fast Chargers
+            </button>
+
+            <button class="filter-btn" onclick="showSlow()">
+                <i class="fa-solid fa-battery-half"></i> Slow Chargers
+            </button>
+
+            <!-- TOOLS -->
+            <div class="section-title">Tools</div>
+
+            <button class="filter-btn" onclick="sortByPrice()">
+                <i class="fa-solid fa-indian-rupee-sign"></i> Cheapest First
+            </button>
+
+            <!-- NAVIGATION -->
+            <div class="section-title">Navigation</div>
+
+            <a href="/bookings">
+                <button class="purple-btn">
+                    <i class="fa-solid fa-calendar-days"></i> Booking History
+                </button>
+            </a>
+
+            <a href="/favourites">
+                <button class="favorite-btn">
+                    <i class="fa-solid fa-heart"></i> My Favorites
+                </button>
+            </a>
+
+            {% if session.user == 'admin' %}
+            <a href="/admin">
+                <button class="dark-btn">
+                    <i class="fa-solid fa-gauge-high"></i> Admin Dashboard
+                </button>
+            </a>
+            {% endif %}
+
+            {% if session.user %}
+            <a href="/logout">
+                <button class="danger-btn">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </button>
+            </a>
+            {% else %}
+            <a href="/login">
+                <button class="primary-btn">
+                    <i class="fa-solid fa-right-to-bracket"></i> Login
+                </button>
+            </a>
+            {% endif %}
+
+            <!-- STATION LIST -->
+            <div id="stationList"></div>
+
+        </div>
+
+        <!-- ================= RIGHT PANEL ================= -->
+
+        <div class="right-panel">
+
+            <!-- MAP -->
+            <div class="map-card glass glow-card">
+                <div class="map-header">
+                    <h2>🗺 Smart EV Navigation</h2>
+                    <span>Live Map Tracking</span>
+                </div>
+                <div id="map"></div>
+            </div>
+
+            <!-- CHART -->
+            <div class="chart-card glass glow-card">
+                <div class="chart-header">
+                    <div>
+                        <h2>📊 Charging Analytics</h2>
+                        <p>Real-time charger network insights</p>
+                    </div>
+                    <div class="chart-pills">
+                        <span class="chart-pill pill-blue">⚡ Fast</span>
+                        <span class="chart-pill pill-green">🐢 Slow</span>
+                        <span class="chart-pill pill-yellow">🟢 Available</span>
+                        <span class="chart-pill pill-red">🔴 Busy</span>
+                    </div>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="usageChart"></canvas>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ================= STATION MODAL ================= -->
+
+<div id="stationModal" class="modal-overlay">
+
+    <div class="station-modal glass">
+
+        <button class="close-modal" onclick="closeModal()">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <div class="modal-image">
+            <img id="modalImage"
+                src="https://images.unsplash.com/photo-1593941707882-a5bac6861d75?q=80&w=1200&auto=format&fit=crop"
+                alt="Charging Station">
+            <div class="modal-image-overlay"></div>
+        </div>
+
+        <div class="modal-content">
+
+            <h2 id="modalTitle">Station Name</h2>
+
+            <div class="modal-details">
+
+                <div class="detail-box">
+                    <span>⚡ Charger Type</span>
+                    <h3 id="modalType">Fast</h3>
+                </div>
+
+                <div class="detail-box">
+                    <span>💰 Price per kWh</span>
+                    <h3 id="modalPrice">₹20/kWh</h3>
+                </div>
+
+                <div class="detail-box">
+                    <span>🔋 Availability</span>
+                    <h3 id="modalStatus">Available</h3>
+                </div>
+
+                <div class="detail-box">
+                    <span>⏱ Est. Charge Time</span>
+                    <h3>30–45 mins</h3>
+                </div>
+
+            </div>
+
+            <div class="modal-buttons">
+
+                <button class="primary-btn" id="bookNowBtn">
+                    <i class="fa-solid fa-calendar-check"></i>
+                    Book Now
+                </button>
+
+                <button class="success-btn" id="navigateBtn">
+                    <i class="fa-solid fa-diamond-turn-right"></i>
+                    Navigate
+                </button>
+
+                <button class="favorite-btn" id="favoriteNowBtn">
+                    <i class="fa-solid fa-heart"></i>
+                    Favorite
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ================= TOAST ================= -->
+
+<div id="toast"></div>
+
+<!-- ================= SCRIPTS ================= -->
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+
+<script>
+    window.addEventListener("load", () => {
+        setTimeout(() => {
+            document.getElementById("loader").style.display = "none";
+        }, 1200);
+    });
+</script>
+
+</body>
+</html>

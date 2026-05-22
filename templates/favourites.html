@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Favorites | EV Charge</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+
+    <style>
+
+        *{ margin:0; padding:0; box-sizing:border-box; }
+
+        body{
+            font-family:'Poppins',sans-serif;
+            background:radial-gradient(circle at top left,#0f172a,#020617 70%);
+            color:white;
+            padding:36px;
+            min-height:100vh;
+        }
+
+        body::before{
+            content:"";
+            position:fixed;
+            width:400px; height:400px;
+            background:#ef4444;
+            filter:blur(170px);
+            opacity:0.08;
+            top:-150px; left:-100px;
+            z-index:-1;
+        }
+
+        body::after{
+            content:"";
+            position:fixed;
+            width:380px; height:380px;
+            background:#7c3aed;
+            filter:blur(160px);
+            opacity:0.08;
+            bottom:-100px; right:-80px;
+            z-index:-1;
+        }
+
+        .container{ width:95%; margin:auto; max-width:1100px; }
+
+        /* ===== TOPBAR ===== */
+
+        .topbar{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-bottom:32px;
+            flex-wrap:wrap;
+            gap:16px;
+        }
+
+        .topbar-left h1{ font-size:36px; font-weight:700; }
+        .topbar-left p{ color:#64748b; font-size:14px; margin-top:4px; }
+
+        .back-btn{
+            display:flex;
+            align-items:center;
+            gap:8px;
+            background:rgba(15,23,42,0.7);
+            backdrop-filter:blur(12px);
+            color:white;
+            text-decoration:none;
+            padding:12px 20px;
+            border-radius:14px;
+            font-weight:600;
+            font-size:14px;
+            transition:0.3s;
+            border:1px solid rgba(255,255,255,0.08);
+        }
+
+        .back-btn:hover{
+            background:#2563eb;
+            transform:translateY(-2px);
+        }
+
+        /* ===== SUMMARY BAR ===== */
+
+        .summary-bar{
+            background:rgba(15,23,42,0.65);
+            backdrop-filter:blur(16px);
+            border:1px solid rgba(255,255,255,0.07);
+            border-radius:18px;
+            padding:16px 24px;
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            margin-bottom:28px;
+            flex-wrap:wrap;
+            gap:12px;
+        }
+
+        .summary-bar span{
+            font-size:14px;
+            color:#64748b;
+        }
+
+        .summary-bar strong{ color:white; }
+
+        .clear-btn{
+            display:flex;
+            align-items:center;
+            gap:7px;
+            background:rgba(239,68,68,0.1);
+            color:#f87171;
+            border:1px solid rgba(239,68,68,0.2);
+            padding:8px 16px;
+            border-radius:10px;
+            font-size:13px;
+            font-weight:600;
+            cursor:pointer;
+            transition:0.3s;
+        }
+
+        .clear-btn:hover{
+            background:rgba(239,68,68,0.2);
+        }
+
+        /* ===== GRID ===== */
+
+        .favorites-grid{
+            display:grid;
+            grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+            gap:22px;
+        }
+
+        /* ===== CARD ===== */
+
+        .favorite-card{
+            background:rgba(15,23,42,0.7);
+            border:1px solid rgba(255,255,255,0.07);
+            backdrop-filter:blur(18px);
+            padding:26px;
+            border-radius:22px;
+            transition:0.35s;
+            position:relative;
+            overflow:hidden;
+        }
+
+        .favorite-card::before{
+            content:"";
+            position:absolute;
+            width:130px; height:130px;
+            border-radius:50%;
+            background:rgba(239,68,68,0.07);
+            top:-60px; right:-40px;
+            transition:0.4s;
+        }
+
+        .favorite-card:hover{
+            transform:translateY(-7px);
+            border-color:rgba(239,68,68,0.2);
+            box-shadow:0 0 30px rgba(239,68,68,0.1);
+        }
+
+        .favorite-card:hover::before{
+            background:rgba(239,68,68,0.14);
+        }
+
+        .station-icon{
+            width:60px; height:60px;
+            border-radius:18px;
+            display:flex; justify-content:center; align-items:center;
+            background:rgba(239,68,68,0.12);
+            color:#f87171;
+            font-size:24px;
+            margin-bottom:18px;
+        }
+
+        .favorite-card h2{
+            font-size:18px;
+            font-weight:700;
+            margin-bottom:14px;
+            color:white;
+        }
+
+        .card-meta{
+            display:flex;
+            flex-direction:column;
+            gap:8px;
+            margin-bottom:20px;
+        }
+
+        .meta-item{
+            display:flex;
+            align-items:center;
+            gap:10px;
+            font-size:13px;
+            color:#64748b;
+        }
+
+        .meta-item i{
+            width:20px;
+            text-align:center;
+            color:#475569;
+        }
+
+        .meta-item span{ color:#94a3b8; }
+
+        /* LOADING SHIMMER */
+
+        .meta-loading{
+            height:13px;
+            width:100px;
+            background:linear-gradient(90deg,#1e293b 25%,#334155 50%,#1e293b 75%);
+            background-size:200% 100%;
+            animation:shimmer 1.5s infinite;
+            border-radius:6px;
+        }
+
+        @keyframes shimmer{
+            0%{ background-position:200% 0; }
+            100%{ background-position:-200% 0; }
+        }
+
+        .card-actions{
+            display:flex;
+            gap:10px;
+        }
+
+        .book-btn{
+            flex:1;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            gap:7px;
+            background:linear-gradient(135deg,#2563eb,#3b82f6);
+            color:white;
+            text-decoration:none;
+            padding:11px 14px;
+            border-radius:12px;
+            font-weight:600;
+            font-size:13px;
+            transition:0.3s;
+        }
+
+        .book-btn:hover{
+            transform:translateY(-2px);
+            box-shadow:0 6px 20px rgba(37,99,235,0.4);
+        }
+
+        .remove-btn{
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            gap:7px;
+            background:rgba(239,68,68,0.1);
+            color:#f87171;
+            border:1px solid rgba(239,68,68,0.2);
+            padding:11px 14px;
+            border-radius:12px;
+            font-weight:600;
+            font-size:13px;
+            cursor:pointer;
+            transition:0.3s;
+        }
+
+        .remove-btn:hover{
+            background:rgba(239,68,68,0.2);
+        }
+
+        /* ===== EMPTY STATE ===== */
+
+        .empty-box{
+            text-align:center;
+            margin-top:80px;
+            color:#475569;
+        }
+
+        .empty-box i{
+            font-size:64px;
+            margin-bottom:20px;
+            display:block;
+            color:#1e293b;
+        }
+
+        .empty-box h2{
+            font-size:28px;
+            color:#64748b;
+            margin-bottom:10px;
+        }
+
+        .empty-box p{ font-size:14px; margin-bottom:24px; }
+
+        .empty-box a{
+            display:inline-flex;
+            align-items:center;
+            gap:8px;
+            background:linear-gradient(135deg,#ef4444,#f97316);
+            color:white;
+            text-decoration:none;
+            padding:13px 26px;
+            border-radius:14px;
+            font-weight:600;
+            font-size:14px;
+            transition:0.3s;
+        }
+
+        .empty-box a:hover{ transform:translateY(-3px); }
+
+        /* ===== RESPONSIVE ===== */
+
+        @media(max-width:700px){
+            body{ padding:20px; }
+            .topbar{ flex-direction:column; align-items:flex-start; }
+            .topbar-left h1{ font-size:28px; }
+        }
+
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <!-- TOPBAR -->
+
+    <div class="topbar">
+        <div class="topbar-left">
+            <h1><i class="fa-solid fa-heart" style="color:#f87171;margin-right:12px;"></i>Favorite Stations</h1>
+            <p>Your saved charging stations</p>
+        </div>
+        <a href="/" class="back-btn">
+            <i class="fa-solid fa-arrow-left"></i>
+            Back to Dashboard
+        </a>
+    </div>
+
+    <!-- SUMMARY BAR -->
+
+    <div class="summary-bar" id="summaryBar" style="display:none;">
+        <span><strong id="favCount">0</strong> saved station(s)</span>
+        <button class="clear-btn" onclick="clearAll()">
+            <i class="fa-solid fa-trash"></i>
+            Clear All
+        </button>
+    </div>
+
+    <!-- FAVORITES GRID -->
+
+    <div id="favoritesContainer" class="favorites-grid"></div>
+
+    <!-- EMPTY STATE -->
+
+    <div id="emptyBox" class="empty-box" style="display:none;">
+        <i class="fa-solid fa-heart-crack"></i>
+        <h2>No Favorites Yet</h2>
+        <p>Save stations from the main dashboard to see them here.</p>
+        <a href="/"><i class="fa-solid fa-charging-station"></i> Explore Stations</a>
+    </div>
+
+</div>
+
+<script>
+
+    let container   = document.getElementById("favoritesContainer");
+    let emptyBox    = document.getElementById("emptyBox");
+    let summaryBar  = document.getElementById("summaryBar");
+    let favCountEl  = document.getElementById("favCount");
+
+    let favorites   = JSON.parse(localStorage.getItem("favorites")) || [];
+    let stationData = [];
+
+    // Fetch station details from API
+    fetch('/stations')
+        .then(res => res.json())
+        .then(data => {
+            stationData = data;
+            renderFavorites();
+        })
+        .catch(() => {
+            renderFavorites();  // render without details if API fails
+        });
+
+    function getStationInfo(name) {
+        return stationData.find(s => s.name === name) || null;
+    }
+
+    function renderFavorites() {
+        container.innerHTML = "";
+
+        if (favorites.length === 0) {
+            emptyBox.style.display   = "block";
+            summaryBar.style.display = "none";
+            return;
+        }
+
+        emptyBox.style.display    = "none";
+        summaryBar.style.display  = "flex";
+        favCountEl.innerText      = favorites.length;
+
+        favorites.forEach((name, index) => {
+            let info = getStationInfo(name);
+
+            let typeHtml, priceHtml, statusHtml;
+
+            if (info) {
+                let badgeColor = info.type === "Fast" ? "#60a5fa" : "#4ade80";
+                let badgeBg    = info.type === "Fast" ? "rgba(59,130,246,0.12)" : "rgba(34,197,94,0.12)";
+                let icon       = info.type === "Fast" ? "⚡" : "🐢";
+
+                typeHtml = `
+                    <span style="background:${badgeBg};color:${badgeColor};padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600;">
+                        ${icon} ${info.type} Charger
+                    </span>`;
+
+                priceHtml  = `₹${info.price}/kWh`;
+                statusHtml = info.available ? "🟢 Available" : "🔴 Busy";
+            } else {
+                typeHtml   = `<span class="meta-loading"></span>`;
+                priceHtml  = "—";
+                statusHtml = "—";
+            }
+
+            container.innerHTML += `
+                <div class="favorite-card" style="animation:fadeIn 0.5s ease ${index * 0.07}s both;">
+
+                    <div class="station-icon">
+                        <i class="fa-solid fa-charging-station"></i>
+                    </div>
+
+                    <div style="margin-bottom:8px;">${typeHtml}</div>
+
+                    <h2>⚡ ${name}</h2>
+
+                    <div class="card-meta">
+                        <div class="meta-item">
+                            <i class="fa-solid fa-indian-rupee-sign"></i>
+                            <span>${priceHtml}</span>
+                        </div>
+                        <div class="meta-item">
+                            <i class="fa-solid fa-circle-dot"></i>
+                            <span>${statusHtml}</span>
+                        </div>
+                    </div>
+
+                    <div class="card-actions">
+                        <a href="/book/${encodeURIComponent(name)}" class="book-btn">
+                            <i class="fa-solid fa-calendar-check"></i>
+                            Book Now
+                        </a>
+                        <button class="remove-btn" onclick="removeFavorite(${index})">
+                            <i class="fa-solid fa-trash"></i>
+                            Remove
+                        </button>
+                    </div>
+
+                </div>
+            `;
+        });
+    }
+
+    function removeFavorite(index) {
+        favorites.splice(index, 1);
+        localStorage.setItem("favorites", JSON.stringify(favorites));
+        renderFavorites();
+    }
+
+    function clearAll() {
+        if (confirm("Remove all favorites?")) {
+            localStorage.removeItem("favorites");
+            favorites = [];
+            renderFavorites();
+        }
+    }
+
+    // Fade in animation
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes fadeIn {
+            from { opacity:0; transform:translateY(16px); }
+            to   { opacity:1; transform:translateY(0); }
+        }
+    `;
+    document.head.appendChild(style);
+
+</script>
+</body>
+</html>
