@@ -12,6 +12,57 @@ app = Flask(__name__)
 app.secret_key = "ev_secret_key_123"
 DATABASE = "database.db"
 
+# ================= AUTO INIT DB =================
+
+def init_db():
+    conn = sqlite3.connect(DATABASE)
+    cur  = conn.cursor()
+    cur.execute("""CREATE TABLE IF NOT EXISTS stations (
+        id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT,
+        lat REAL, lng REAL, type TEXT, available INTEGER, price INTEGER)""")
+    cur.execute("""CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE,
+        email TEXT UNIQUE, password TEXT,
+        wallet INTEGER DEFAULT 500, phone TEXT DEFAULT '', vehicle TEXT DEFAULT '')""")
+    cur.execute("""CREATE TABLE IF NOT EXISTS bookings (
+        id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, station_name TEXT,
+        booking_time TEXT DEFAULT (datetime('now','localtime')),
+        slot TEXT DEFAULT '', duration INTEGER DEFAULT 1,
+        kwh REAL DEFAULT 10, cost REAL DEFAULT 0)""")
+    cur.execute("""CREATE TABLE IF NOT EXISTS reviews (
+        id INTEGER PRIMARY KEY AUTOINCREMENT, booking_id INTEGER UNIQUE,
+        username TEXT, station_name TEXT, rating INTEGER DEFAULT 5,
+        comment TEXT DEFAULT '', created_at TEXT DEFAULT (datetime('now','localtime')))""")
+    cur.execute("""CREATE TABLE IF NOT EXISTS activity (
+        id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT,
+        action TEXT, detail TEXT,
+        created_at TEXT DEFAULT (datetime('now','localtime')))""")
+    # Safe column upgrades
+    for col, defn in [("wallet","INTEGER DEFAULT 500"),("phone","TEXT DEFAULT ''"),("vehicle","TEXT DEFAULT ''")]:
+        try: cur.execute(f"ALTER TABLE users ADD COLUMN {col} {defn}")
+        except: pass
+    for col, defn in [("slot","TEXT DEFAULT ''"),("duration","INTEGER DEFAULT 1"),("kwh","REAL DEFAULT 10"),("cost","REAL DEFAULT 0")]:
+        try: cur.execute(f"ALTER TABLE bookings ADD COLUMN {col} {defn}")
+        except: pass
+    # Seed stations if empty
+    if cur.execute("SELECT COUNT(*) FROM stations").fetchone()[0] == 0:
+        cur.executemany("INSERT INTO stations (name,lat,lng,type,available,price) VALUES (?,?,?,?,?,?)", [
+            ("Jalandhar Central Station",31.3260,75.5762,"Fast",1,20),
+            ("Model Town EV Hub",31.3201,75.5900,"Slow",0,10),
+            ("Bus Stand Fast Charger",31.3256,75.5789,"Fast",1,25),
+            ("GT Road Highway Station",31.3100,75.6000,"Fast",0,30),
+            ("Mall Road Charging Point",31.3300,75.5700,"Slow",1,15),
+            ("LPU Campus Charging Hub",31.2536,75.7033,"Fast",1,18),
+            ("Railway Station Charger",31.3265,75.6200,"Slow",0,12),
+            ("Phagwara Fast Charger",31.2206,75.7734,"Fast",1,22),
+            ("Nakodar Road EV Stop",31.2900,75.6500,"Slow",1,8),
+            ("Ludhiana NH-44 Hub",30.9010,75.8573,"Fast",1,28),
+        ])
+    conn.commit()
+    conn.close()
+
+init_db()
+
 # ================= DB =================
 
 def get_db_connection():
