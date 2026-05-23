@@ -460,10 +460,10 @@ function addFavorite(name) {
 
 function bookStation(stationName) {
     closeModal();
-    showToast(`⚡ Booking ${stationName}...`, "info");
+    showToast(`⚡ Opening booking for ${stationName}...`, "info");
     setTimeout(() => {
-        window.location.href = `/book/${encodeURIComponent(stationName)}`;
-    }, 900);
+        window.location.href = `/smart-book/${encodeURIComponent(stationName)}`;
+    }, 600);
 }
 
 // ================= DARK MODE =================
@@ -624,6 +624,24 @@ function createChart() {
         }
     });
 }
+
+// ================= AUTO REFRESH STATIONS =================
+
+setInterval(() => {
+    fetch('/stations')
+        .then(res => res.json())
+        .then(data => {
+            stations = data;
+            let fast      = stations.filter(s => s.type === "Fast").length;
+            let available = stations.filter(s => s.available).length;
+            let totalEl   = document.getElementById("totalStations");
+            let fastEl    = document.getElementById("fastCount");
+            let availEl   = document.getElementById("availableCount");
+            if (totalEl) totalEl.innerText = stations.length;
+            if (fastEl)  fastEl.innerText  = fast;
+            if (availEl) availEl.innerText  = available;
+        });
+}, 30000);
 
 // ================= TOAST =================
 

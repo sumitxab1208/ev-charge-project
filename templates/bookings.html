@@ -6,387 +6,220 @@
     <title>Booking History | EV Charge</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
-
     <style>
-
         *{ margin:0; padding:0; box-sizing:border-box; }
-
-        body{
-            font-family:'Poppins',sans-serif;
-            background:radial-gradient(circle at top left,#0f172a,#020617 70%);
-            color:white;
-            padding:40px;
-            min-height:100vh;
-        }
-
-        body::before{
-            content:"";
-            position:fixed;
-            width:400px; height:400px;
-            background:#2563eb;
-            filter:blur(160px);
-            opacity:0.12;
-            top:-150px; left:-100px;
-            z-index:-1;
-        }
-
-        body::after{
-            content:"";
-            position:fixed;
-            width:350px; height:350px;
-            background:#7c3aed;
-            filter:blur(160px);
-            opacity:0.1;
-            bottom:-100px; right:-100px;
-            z-index:-1;
-        }
-
-        .container{ width:95%; margin:auto; max-width:1100px; }
-
-        /* ===== TOPBAR ===== */
-
-        .topbar{
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-            margin-bottom:30px;
-        }
-
-        .topbar-left h1{ font-size:36px; font-weight:700; }
-
-        .topbar-left p{
-            color:#64748b;
-            font-size:14px;
-            margin-top:4px;
-        }
-
-        .topbar-right{
-            display:flex;
-            gap:12px;
-        }
-
-        .back-btn{
-            display:flex;
-            align-items:center;
-            gap:8px;
-            background:rgba(15,23,42,0.7);
-            backdrop-filter:blur(12px);
-            color:white;
-            text-decoration:none;
-            padding:12px 20px;
-            border-radius:14px;
-            font-weight:600;
-            font-size:14px;
-            transition:0.3s;
-            border:1px solid rgba(255,255,255,0.08);
-        }
-
-        .back-btn:hover{
-            background:#2563eb;
-            transform:translateY(-2px);
-        }
-
-        /* ===== STATS ROW ===== */
-
-        .stats-row{
-            display:grid;
-            grid-template-columns:repeat(3,1fr);
-            gap:18px;
-            margin-bottom:28px;
-        }
-
-        .mini-stat{
-            background:rgba(15,23,42,0.65);
-            backdrop-filter:blur(16px);
-            border:1px solid rgba(255,255,255,0.07);
-            border-radius:20px;
-            padding:22px 24px;
-            display:flex;
-            align-items:center;
-            gap:16px;
-            transition:0.3s;
-        }
-
+        body{ font-family:'Poppins',sans-serif; background:radial-gradient(circle at top left,#0f172a,#020617 70%); color:white; padding:40px; min-height:100vh; }
+        body::before{ content:""; position:fixed; width:400px; height:400px; background:#2563eb; filter:blur(160px); opacity:0.12; top:-150px; left:-100px; z-index:-1; }
+        body::after{ content:""; position:fixed; width:350px; height:350px; background:#7c3aed; filter:blur(160px); opacity:0.1; bottom:-100px; right:-100px; z-index:-1; }
+        .container{ width:95%; margin:auto; max-width:1200px; }
+        .topbar{ display:flex; justify-content:space-between; align-items:center; margin-bottom:30px; flex-wrap:wrap; gap:16px; }
+        .topbar-left h1{ font-size:34px; font-weight:700; }
+        .topbar-left p{ color:#64748b; font-size:14px; margin-top:4px; }
+        .topbar-right{ display:flex; gap:12px; }
+        .back-btn{ display:flex; align-items:center; gap:8px; background:rgba(15,23,42,0.7); backdrop-filter:blur(12px); color:white; text-decoration:none; padding:12px 20px; border-radius:14px; font-weight:600; font-size:14px; transition:0.3s; border:1px solid rgba(255,255,255,0.08); }
+        .back-btn:hover{ background:#2563eb; transform:translateY(-2px); }
+        /* STATS */
+        .stats-row{ display:grid; grid-template-columns:repeat(4,1fr); gap:18px; margin-bottom:28px; }
+        .mini-stat{ background:rgba(15,23,42,0.65); backdrop-filter:blur(16px); border:1px solid rgba(255,255,255,0.07); border-radius:20px; padding:22px 24px; display:flex; align-items:center; gap:16px; transition:0.3s; }
         .mini-stat:hover{ transform:translateY(-4px); }
-
-        .mini-icon{
-            width:52px; height:52px;
-            border-radius:16px;
-            display:flex; justify-content:center; align-items:center;
-            font-size:20px;
-            flex-shrink:0;
-        }
-
+        .mini-icon{ width:52px; height:52px; border-radius:16px; display:flex; justify-content:center; align-items:center; font-size:20px; flex-shrink:0; }
         .mini-icon.blue { background:rgba(59,130,246,0.18); color:#60a5fa; }
         .mini-icon.green{ background:rgba(34,197,94,0.18);  color:#4ade80; }
+        .mini-icon.yellow{ background:rgba(234,179,8,0.18); color:#facc15; }
         .mini-icon.purple{ background:rgba(168,85,247,0.18); color:#c084fc; }
-
-        .mini-stat h3{ font-size:30px; line-height:1; }
-        .mini-stat p { color:#64748b; font-size:13px; margin-top:3px; }
-
-        /* ===== TABLE CARD ===== */
-
-        .table-card{
-            background:rgba(15,23,42,0.65);
-            backdrop-filter:blur(18px);
-            border:1px solid rgba(255,255,255,0.07);
-            border-radius:24px;
-            overflow:hidden;
-            box-shadow:0 12px 40px rgba(0,0,0,0.3);
-        }
-
-        .table-header{
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-            padding:22px 28px;
-            border-bottom:1px solid rgba(255,255,255,0.06);
-        }
-
-        .table-header h2{ font-size:22px; }
-
-        .booking-count{
-            font-size:13px;
-            color:#64748b;
-            background:rgba(255,255,255,0.05);
-            padding:6px 14px;
-            border-radius:20px;
-            border:1px solid rgba(255,255,255,0.07);
-        }
-
+        .mini-stat h3{ font-size:28px; line-height:1; }
+        .mini-stat p{ color:#64748b; font-size:13px; margin-top:3px; }
+        /* TABLE */
+        .table-card{ background:rgba(15,23,42,0.65); backdrop-filter:blur(18px); border:1px solid rgba(255,255,255,0.07); border-radius:24px; overflow:hidden; box-shadow:0 12px 40px rgba(0,0,0,0.3); }
+        .table-header{ display:flex; justify-content:space-between; align-items:center; padding:22px 28px; border-bottom:1px solid rgba(255,255,255,0.06); flex-wrap:wrap; gap:12px; }
+        .table-header h2{ font-size:20px; }
+        .search-box{ display:flex; align-items:center; background:#111827; border-radius:12px; padding:10px 16px; gap:8px; border:1px solid rgba(255,255,255,0.06); }
+        .search-box i{ color:#60a5fa; font-size:13px; }
+        .search-box input{ background:transparent; border:none; outline:none; color:white; font-size:13px; font-family:'Poppins',sans-serif; width:160px; }
         table{ width:100%; border-collapse:collapse; }
-
-        th{
-            background:rgba(17,24,39,0.8);
-            color:#475569;
-            padding:16px 24px;
-            text-align:left;
-            font-size:12px;
-            letter-spacing:0.08em;
-            text-transform:uppercase;
-        }
-
-        td{
-            padding:18px 24px;
-            border-bottom:1px solid rgba(255,255,255,0.04);
-            color:#d1d5db;
-            font-size:14px;
-        }
-
+        th{ background:rgba(17,24,39,0.8); color:#475569; padding:14px 22px; text-align:left; font-size:12px; letter-spacing:0.07em; text-transform:uppercase; }
+        td{ padding:16px 22px; border-bottom:1px solid rgba(255,255,255,0.04); color:#d1d5db; font-size:14px; }
         tr{ transition:0.25s; }
-
         tr:last-child td{ border-bottom:none; }
-
         tr:hover td{ background:rgba(255,255,255,0.025); }
-
-        .booking-id{
-            color:#60a5fa;
-            font-weight:700;
-            font-size:15px;
-        }
-
-        .station-name{
-            font-weight:600;
-            color:white;
-        }
-
-        .status-badge{
-            display:inline-flex;
-            align-items:center;
-            gap:6px;
-            padding:6px 14px;
-            border-radius:20px;
-            font-size:12px;
-            font-weight:600;
-        }
-
-        .status-confirmed{
-            background:rgba(34,197,94,0.15);
-            color:#4ade80;
-            border:1px solid rgba(34,197,94,0.2);
-        }
-
-        .cancel-btn{
-            display:inline-flex;
-            align-items:center;
-            gap:6px;
-            background:rgba(239,68,68,0.12);
-            color:#f87171;
-            text-decoration:none;
-            padding:8px 14px;
-            border-radius:10px;
-            font-size:12px;
-            font-weight:600;
-            transition:0.3s;
-            border:1px solid rgba(239,68,68,0.2);
-        }
-
-        .cancel-btn:hover{
-            background:rgba(239,68,68,0.25);
-            border-color:rgba(239,68,68,0.4);
-        }
-
-        /* ===== EMPTY STATE ===== */
-
-        .empty-box{
-            text-align:center;
-            padding:70px 40px;
-            color:#475569;
-        }
-
-        .empty-box i{
-            font-size:60px;
-            margin-bottom:20px;
-            display:block;
-            color:#1e293b;
-        }
-
-        .empty-box h2{
-            font-size:26px;
-            color:#64748b;
-            margin-bottom:10px;
-        }
-
-        .empty-box p{
-            font-size:14px;
-            margin-bottom:24px;
-        }
-
-        .empty-box a{
-            display:inline-flex;
-            align-items:center;
-            gap:8px;
-            background:linear-gradient(135deg,#2563eb,#3b82f6);
-            color:white;
-            text-decoration:none;
-            padding:13px 24px;
-            border-radius:14px;
-            font-weight:600;
-            font-size:14px;
-            transition:0.3s;
-        }
-
-        .empty-box a:hover{ transform:translateY(-3px); }
-
-        /* ===== RESPONSIVE ===== */
-
-        @media(max-width:900px){
-            body{ padding:20px; }
-            .stats-row{ grid-template-columns:1fr; }
-            .table-card{ overflow-x:auto; }
-            table{ min-width:720px; }
-            .topbar{ flex-direction:column; align-items:flex-start; gap:16px; }
-            .topbar-left h1{ font-size:28px; }
-        }
-
+        .booking-id{ color:#60a5fa; font-weight:700; font-size:15px; }
+        .station-name{ font-weight:600; color:white; }
+        .status-badge{ display:inline-flex; align-items:center; gap:6px; padding:6px 14px; border-radius:20px; font-size:12px; font-weight:600; background:rgba(34,197,94,0.15); color:#4ade80; border:1px solid rgba(34,197,94,0.2); }
+        .cost-badge{ color:#4ade80; font-weight:700; font-size:15px; }
+        .slot-badge{ background:rgba(168,85,247,0.12); color:#c084fc; border:1px solid rgba(168,85,247,0.2); padding:4px 10px; border-radius:10px; font-size:12px; font-weight:600; }
+        .action-row{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+        .cancel-btn{ display:inline-flex; align-items:center; gap:6px; background:rgba(239,68,68,0.12); color:#f87171; text-decoration:none; padding:7px 12px; border-radius:10px; font-size:12px; font-weight:600; transition:0.3s; border:1px solid rgba(239,68,68,0.2); }
+        .cancel-btn:hover{ background:rgba(239,68,68,0.25); }
+        .review-btn{ display:inline-flex; align-items:center; gap:6px; background:rgba(234,179,8,0.1); color:#facc15; padding:7px 12px; border-radius:10px; font-size:12px; font-weight:600; transition:0.3s; border:1px solid rgba(234,179,8,0.2); cursor:pointer; }
+        .review-btn:hover{ background:rgba(234,179,8,0.2); }
+        /* EMPTY */
+        .empty-box{ text-align:center; padding:70px 40px; color:#475569; }
+        .empty-box i{ font-size:60px; margin-bottom:20px; display:block; color:#1e293b; }
+        .empty-box h2{ font-size:26px; color:#64748b; margin-bottom:10px; }
+        .empty-box p{ font-size:14px; margin-bottom:24px; }
+        .empty-box a{ display:inline-flex; align-items:center; gap:8px; background:linear-gradient(135deg,#2563eb,#3b82f6); color:white; text-decoration:none; padding:13px 24px; border-radius:14px; font-weight:600; font-size:14px; transition:0.3s; }
+        /* REVIEW MODAL */
+        .modal-overlay{ position:fixed; inset:0; background:rgba(0,0,0,0.75); backdrop-filter:blur(10px); display:flex; justify-content:center; align-items:center; z-index:9999; opacity:0; visibility:hidden; transition:0.3s; }
+        .modal-overlay.active{ opacity:1; visibility:visible; }
+        .review-modal{ background:#0f172a; border:1px solid rgba(255,255,255,0.08); border-radius:24px; padding:32px; width:460px; max-width:95%; animation:pop 0.3s ease; }
+        @keyframes pop{ from{ transform:scale(0.9); opacity:0; } to{ transform:scale(1); opacity:1; } }
+        .review-modal h3{ font-size:20px; font-weight:700; margin-bottom:20px; }
+        .star-row{ display:flex; gap:10px; margin-bottom:18px; }
+        .star{ font-size:32px; cursor:pointer; transition:0.2s; filter:grayscale(1); }
+        .star.active{ filter:grayscale(0); transform:scale(1.1); }
+        .review-modal textarea{ width:100%; background:#111827; border:1px solid rgba(255,255,255,0.07); color:white; padding:14px; border-radius:14px; font-size:14px; font-family:'Poppins',sans-serif; outline:none; resize:none; height:100px; transition:0.3s; }
+        .review-modal textarea:focus{ border-color:rgba(59,130,246,0.4); box-shadow:0 0 0 3px rgba(59,130,246,0.1); }
+        .modal-btns{ display:flex; gap:12px; margin-top:18px; }
+        .modal-cancel{ flex:1; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); color:#64748b; padding:12px; border-radius:12px; cursor:pointer; font-family:'Poppins',sans-serif; font-weight:600; transition:0.3s; }
+        .modal-cancel:hover{ background:rgba(255,255,255,0.1); color:white; }
+        .modal-submit{ flex:2; background:linear-gradient(135deg,#d97706,#f59e0b); color:white; border:none; padding:12px; border-radius:12px; cursor:pointer; font-family:'Poppins',sans-serif; font-weight:700; font-size:14px; transition:0.3s; }
+        .modal-submit:hover{ transform:translateY(-2px); box-shadow:0 6px 16px rgba(217,119,6,0.3); }
+        /* RESPONSIVE */
+        @media(max-width:900px){ .stats-row{ grid-template-columns:repeat(2,1fr); } .table-card{ overflow-x:auto; } table{ min-width:800px; } }
+        @media(max-width:600px){ body{ padding:20px; } .stats-row{ grid-template-columns:1fr 1fr; } .topbar{ flex-direction:column; align-items:flex-start; } }
     </style>
 </head>
-
 <body>
 <div class="container">
 
     <!-- TOPBAR -->
-
     <div class="topbar">
         <div class="topbar-left">
             <h1><i class="fa-solid fa-calendar-days" style="color:#3b82f6;margin-right:12px;"></i>Booking History</h1>
             <p>All your EV charging station bookings in one place</p>
         </div>
         <div class="topbar-right">
-            <a href="/" class="back-btn">
-                <i class="fa-solid fa-arrow-left"></i>
-                Back to Dashboard
-            </a>
+            <a href="/profile" class="back-btn"><i class="fa-solid fa-user"></i> Profile</a>
+            <a href="/" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Dashboard</a>
         </div>
     </div>
 
-    <!-- STATS ROW -->
-
+    <!-- STATS -->
     <div class="stats-row">
         <div class="mini-stat">
             <div class="mini-icon blue"><i class="fa-solid fa-calendar-check"></i></div>
-            <div>
-                <h3>{{ bookings|length }}</h3>
-                <p>Total Bookings</p>
-            </div>
+            <div><h3>{{ bookings|length }}</h3><p>Total Bookings</p></div>
         </div>
-
         <div class="mini-stat">
             <div class="mini-icon green"><i class="fa-solid fa-circle-check"></i></div>
+            <div><h3>{{ bookings|length }}</h3><p>Confirmed</p></div>
+        </div>
+        <div class="mini-stat">
+            <div class="mini-icon yellow"><i class="fa-solid fa-indian-rupee-sign"></i></div>
             <div>
-                <h3>{{ bookings|length }}</h3>
-                <p>Confirmed</p>
+                <h3>₹{% set total = namespace(v=0) %}{% for b in bookings %}{% set total.v = total.v + (b.cost or 0) %}{% endfor %}{{ total.v | round(0) | int }}</h3>
+                <p>Total Spent</p>
             </div>
         </div>
-
         <div class="mini-stat">
             <div class="mini-icon purple"><i class="fa-solid fa-user"></i></div>
-            <div>
-                <h3 style="font-size:18px;margin-top:2px;">{{ username }}</h3>
-                <p>Logged in as</p>
-            </div>
+            <div><h3 style="font-size:16px;margin-top:4px;">{{ username }}</h3><p>Logged in as</p></div>
         </div>
     </div>
 
     <!-- TABLE -->
-
     <div class="table-card">
-
         <div class="table-header">
             <h2>📖 Recent Bookings</h2>
-            <span class="booking-count">{{ bookings|length }} record(s)</span>
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="searchBox" placeholder="Search..." oninput="filterRows()">
+            </div>
         </div>
 
         {% if bookings|length > 0 %}
-
         <table>
             <tr>
-                <th>ID</th>
-                <th>Station</th>
-                <th>Date & Time</th>
-                <th>Status</th>
-                <th>Action</th>
+                <th>ID</th><th>Station</th><th>Date & Time</th><th>Slot</th><th>kWh</th><th>Cost</th><th>Status</th><th>Actions</th>
             </tr>
-
+            <tbody id="bookingRows">
             {% for booking in bookings %}
             <tr>
                 <td class="booking-id">#{{ booking.id }}</td>
                 <td class="station-name">⚡ {{ booking.station_name }}</td>
                 <td>{{ booking.booking_time or "—" }}</td>
+                <td>{% if booking.slot %}<span class="slot-badge">{{ booking.slot }}</span>{% else %}—{% endif %}</td>
+                <td>{{ booking.kwh or "—" }}</td>
+                <td class="cost-badge">₹{{ booking.cost or 0 }}</td>
+                <td><span class="status-badge"><i class="fa-solid fa-circle-check"></i> Confirmed</span></td>
                 <td>
-                    <span class="status-badge status-confirmed">
-                        <i class="fa-solid fa-circle-check"></i>
-                        Confirmed
-                    </span>
-                </td>
-                <td>
-                    <a href="/cancel-booking/{{ booking.id }}"
-                       class="cancel-btn"
-                       onclick="return confirm('Cancel this booking?')">
-                        <i class="fa-solid fa-xmark"></i>
-                        Cancel
-                    </a>
+                    <div class="action-row">
+                        <a href="/cancel-booking/{{ booking.id }}" class="cancel-btn" onclick="return confirm('Cancel and get refund?')">
+                            <i class="fa-solid fa-xmark"></i> Cancel
+                        </a>
+                        <button class="review-btn" onclick="openReview({{ booking.id }}, '{{ booking.station_name }}')">
+                            <i class="fa-solid fa-star"></i> Review
+                        </button>
+                    </div>
                 </td>
             </tr>
             {% endfor %}
+            </tbody>
         </table>
-
         {% else %}
-
         <div class="empty-box">
             <i class="fa-solid fa-calendar-xmark"></i>
             <h2>No bookings yet</h2>
             <p>Your charger bookings will appear here once you make one.</p>
-            <a href="/">
-                <i class="fa-solid fa-charging-station"></i>
-                Find a Station
-            </a>
+            <a href="/"><i class="fa-solid fa-charging-station"></i> Find a Station</a>
         </div>
-
         {% endif %}
-
     </div>
-
 </div>
+
+<!-- REVIEW MODAL -->
+<div class="modal-overlay" id="reviewModal">
+    <div class="review-modal">
+        <h3><i class="fa-solid fa-star" style="color:#facc15;margin-right:10px;"></i>Rate Your Experience</h3>
+        <p id="reviewStation" style="color:#64748b;font-size:14px;margin-bottom:18px;"></p>
+        <div class="star-row" id="starRow">
+            <span class="star" onclick="setRating(1)">⭐</span>
+            <span class="star" onclick="setRating(2)">⭐</span>
+            <span class="star" onclick="setRating(3)">⭐</span>
+            <span class="star" onclick="setRating(4)">⭐</span>
+            <span class="star" onclick="setRating(5)">⭐</span>
+        </div>
+        <form method="POST" id="reviewForm">
+            <input type="hidden" name="rating" id="ratingInput" value="5">
+            <textarea name="comment" placeholder="Share your experience (optional)..."></textarea>
+            <div class="modal-btns">
+                <button type="button" class="modal-cancel" onclick="closeReview()">Cancel</button>
+                <button type="submit" class="modal-submit"><i class="fa-solid fa-paper-plane"></i> Submit Review</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    let currentRating = 5;
+
+    function openReview(bookingId, stationName) {
+        document.getElementById('reviewForm').action = '/review/' + bookingId;
+        document.getElementById('reviewStation').innerText = '⚡ ' + stationName;
+        setRating(5);
+        document.getElementById('reviewModal').classList.add('active');
+    }
+    function closeReview() {
+        document.getElementById('reviewModal').classList.remove('active');
+    }
+    function setRating(r) {
+        currentRating = r;
+        document.getElementById('ratingInput').value = r;
+        document.querySelectorAll('.star').forEach((s, i) => {
+            s.classList.toggle('active', i < r);
+        });
+    }
+    window.onclick = e => {
+        if (e.target === document.getElementById('reviewModal')) closeReview();
+    };
+    function filterRows() {
+        let q = document.getElementById('searchBox').value.toLowerCase();
+        document.querySelectorAll('#bookingRows tr').forEach(r => {
+            r.style.display = r.innerText.toLowerCase().includes(q) ? '' : 'none';
+        });
+    }
+    // Init stars
+    setRating(5);
+</script>
 </body>
 </html>
